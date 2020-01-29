@@ -7,11 +7,40 @@ inline float Dist(const sf::Vector2f& first, const sf::Vector2f& second)
 	return sqrtf(distX * distX + distY * distY);
 }
 
+struct LineWithThickness : public sf::Drawable
+{
+	LineWithThickness(const sf::Vector2f& p1, const sf::Vector2f& p2, sf::Color color, float thickness)
+	{
+		sf::Vector2f dir = p2 - p1;
+		sf::Vector2f unitDir = dir / sqrtf(dir.x * dir.x + dir.y * dir.y);
+		sf::Vector2f rightAngleUnitDir(-unitDir.y, unitDir.x);
+		sf::Vector2f brushOffset = (thickness * 0.5f) * rightAngleUnitDir;
+
+		vertices[0].position = p1 + brushOffset;
+		vertices[1].position = p2 + brushOffset;
+		vertices[2].position = p2 - brushOffset;
+		vertices[3].position = p1 - brushOffset;
+
+		for(auto& v : vertices)
+			v.color = color;
+	}
+
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const
+	{
+		target.draw(vertices, 4, sf::Quads);
+	}
+
+public:
+	sf::Vertex vertices[4];
+	float thickness;
+};
+
 struct Stroke
 {
-	int size;
+	bool currentlyBeingDrawn;
 	sf::VertexArray line;
-	std::vector<sf::RectangleShape> rectangles;
+	std::vector<LineWithThickness> parts;
+	std::vector<sf::CircleShape> joints;
 };
 
 int main()
@@ -38,33 +67,35 @@ int main()
 				window.close();
 			if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
+				currentStroke.currentlyBeingDrawn = true;
+
 				// Get center of brush
 				sf::Vector2f mousePos = (sf::Vector2f)sf::Mouse::getPosition(window);
 				currentStroke.line.append(sf::Vertex(mousePos, brushColor));
-				currentStroke.size = brushSize;
 
 				int vertexCount = (int)currentStroke.line.getVertexCount();
 				if(vertexCount < 2)
 					continue;
-				sf::Vertex& first = currentStroke.line[(size_t)(vertexCount - 2)];
-				sf::Vertex& second = currentStroke.line[(size_t)(vertexCount - 1)];
+				sf::Vertex& first = currentStroke.line[vertexCount - 2];
+				sf::Vertex& second = currentStroke.line[vertexCount - 1];
 
-				float w = Dist(first.position, second.position) + 1.0f;
-				float h = (float)brushSize;
-				sf::RectangleShape temp(sf::Vector2f(w, h));
-				temp.setPosition(first.position);
-				temp.rotate(-57.2957795f * atan2(abs(second.position.y - first.position.y), abs(second.position.x - first.position.x)));
-				temp.setOrigin(w * 0.5f, h * 0.5f);
-				temp.setFillColor(brushColor);
-				currentStroke.rectangles.push_back(temp);
+				LineWithThickness tempPart(first.position, second.position, brushColor, (float)brushSize);
+				currentStroke.parts.push_back(tempPart);
 
-				for(auto& r : currentStroke.rectangles)
-					window.draw(r);
+				float r = (float)brushSize * 0.5f;
+				sf::CircleShape tempJoint(r);
+				tempJoint.setOrigin(r, r);
+				tempJoint.setPosition(second.position);
+				tempJoint.setFillColor(brushColor);
+				currentStroke.joints.push_back(tempJoint);
+
 			} else if(e.type == sf::Event::MouseButtonReleased && e.key.code == sf::Mouse::Left)
 			{
+				currentStroke.currentlyBeingDrawn = false;
 				brushStrokes.push_back(currentStroke);
 				currentStroke.line.clear();
-				currentStroke.rectangles.clear();
+				currentStroke.parts.clear();
+				currentStroke.joints.clear();
 			}
 
 			if(e.type == sf::Event::KeyPressed)
@@ -76,9 +107,21 @@ int main()
 			}
 		}
 
-		for(auto& s : brushStrokes)	// BUG: Rectangles draw in wrong order
-			for(auto& r : s.rectangles)
-				window.draw(r);
+		for(auto& s : brushStrokes)
+		{
+			for(auto& j : s.joints)
+				window.draw(j);
+			for(auto& p : s.parts)
+				window.draw(p);
+		}
+
+		if(currentStroke.currentlyBeingDrawn)
+		{
+			for(auto& j : currentStroke.joints)
+				window.draw(j);
+			for(auto& p : currentStroke.parts)
+				window.draw(p);
+		}
 
 		window.display();
 	}
