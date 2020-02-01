@@ -37,8 +37,47 @@ public:
 
 struct Stroke
 {
-	bool currentlyBeingDrawn;
+	bool currentlyBeingDrawn = false;
 	sf::VertexArray line;
 	std::vector<LineWithThickness> parts;
 	std::vector<sf::CircleShape> joints;
 };
+
+struct Button
+{
+	sf::RectangleShape buttonShape;
+};
+
+void InitializeButtons(std::vector<Button>& buttons, int width)
+{
+	std::vector<sf::Color> colors
+	{
+		sf::Color::Red,
+		sf::Color(255, 165, 0, 255),
+		sf::Color::Yellow,
+		sf::Color(200, 255, 0, 255),
+		sf::Color::Green,
+		sf::Color(0, 244, 165),
+		sf::Color::Cyan,
+		sf::Color(0, 184, 255),
+		sf::Color::Blue,
+		sf::Color(111, 0, 255),
+		sf::Color(212, 0, 212),
+		sf::Color::Magenta,
+		sf::Color(122, 63, 4),
+		sf::Color::Black,
+		sf::Color(128, 128, 128),
+		sf::Color::White
+	};
+
+	int numColors = (int)colors.size();
+	float buttonSize = width / (float)numColors;
+	sf::RectangleShape temp(sf::Vector2f(buttonSize, buttonSize));
+	for(int i = 0; i < numColors; i++)
+	{
+		temp.setPosition(i * buttonSize, 0.0f);
+		temp.setFillColor(colors[i]);
+
+		buttons.push_back({ temp });
+	}
+}

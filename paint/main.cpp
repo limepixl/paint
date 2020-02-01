@@ -3,10 +3,11 @@
 
 int main()
 {
-	const int WIDTH = 800;
-	const int HEIGHT = 600;
+	// Window setup
+	const int WIDTH = 1280;
+	const int HEIGHT = 720;
 	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Paint");
-	window.setFramerateLimit(60);
+	window.setFramerateLimit(30);
 
 	int brushSize = 10;
 	sf::Color brushColor(0, 0, 0);
@@ -14,6 +15,11 @@ int main()
 	Stroke currentStroke;
 	std::vector<Stroke> brushStrokes;
 
+	// Interactable buttons
+	std::vector<Button> buttons;
+	InitializeButtons(buttons, WIDTH);
+
+	// Render loop
 	while(window.isOpen())
 	{
 		window.clear(sf::Color::White);
@@ -82,6 +88,7 @@ int main()
 			}
 		}
 
+		// Draw all stored brush strokes
 		for(auto& s : brushStrokes)
 		{
 			for(auto& j : s.joints)
@@ -90,6 +97,7 @@ int main()
 				window.draw(p);
 		}
 
+		// Draw the current brush stroke
 		if(currentStroke.currentlyBeingDrawn)
 		{
 			for(auto& j : currentStroke.joints)
@@ -97,6 +105,10 @@ int main()
 			for(auto& p : currentStroke.parts)
 				window.draw(p);
 		}
+
+		// Draw buttons on top of canvas
+		for(auto& b : buttons)
+			window.draw(b.buttonShape);
 
 		window.display();
 	}
