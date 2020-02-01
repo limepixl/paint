@@ -1,5 +1,5 @@
-#include <SFML/Graphics.hpp>
-#include "utility.h"
+#include "stroke.h"
+#include "button.h"
 
 int main()
 {
@@ -17,7 +17,7 @@ int main()
 
 	// Interactable buttons
 	std::vector<Button> buttons;
-	InitializeButtons(buttons, WIDTH);
+	InitializeButtons(buttons, WIDTH, HEIGHT);
 
 	// Render loop
 	while(window.isOpen())
@@ -54,8 +54,8 @@ int main()
 					int vertexCount = (int)currentStroke.line.getVertexCount();
 					if(vertexCount < 2)
 						continue;
-					sf::Vertex& first = currentStroke.line[vertexCount - 2];
-					sf::Vertex& second = currentStroke.line[vertexCount - 1];
+					sf::Vertex& first = currentStroke.line[(size_t)vertexCount - 2];
+					sf::Vertex& second = currentStroke.line[(size_t)vertexCount - 1];
 
 					LineWithThickness tempPart(first.position, second.position, brushColor, (float)brushSize);
 					currentStroke.parts.push_back(tempPart);
@@ -69,7 +69,7 @@ int main()
 				}
 			}
 			
-			// Current brush stroke has ended, store it
+			// Current brush stroke has ended or the window has lost focus, store the stroke
 			if((e.type == sf::Event::MouseButtonReleased && e.key.code == sf::Mouse::Left && currentStroke.currentlyBeingDrawn) || e.type == sf::Event::LostFocus)
 			{
 				currentStroke.currentlyBeingDrawn = false;
@@ -92,20 +92,11 @@ int main()
 					// Undo
 					if(e.key.control && e.key.code == sf::Keyboard::Z && !brushStrokes.empty())
 						brushStrokes.erase(brushStrokes.end() - 1);
-
-					// Change brush color
-					if(e.key.code == sf::Keyboard::Num1)
-						brushColor = sf::Color::Black;
-					else if(e.key.code == sf::Keyboard::Num2)
-						brushColor = sf::Color::Red;
-					else if(e.key.code == sf::Keyboard::Num3)
-						brushColor = sf::Color::Blue;
 				}
 			}
 		}
 
-		// Draw all stored brush strokes
-		for(auto& s : brushStrokes)
+		for(auto& s : brushStrokes)	// Draw all stored brush strokes
 		{
 			for(auto& j : s.joints)
 				window.draw(j);
@@ -113,8 +104,7 @@ int main()
 				window.draw(p);
 		}
 
-		// Draw the current brush stroke
-		if(currentStroke.currentlyBeingDrawn)
+		if(currentStroke.currentlyBeingDrawn)	// Draw the current brush stroke
 		{
 			for(auto& j : currentStroke.joints)
 				window.draw(j);
@@ -122,8 +112,7 @@ int main()
 				window.draw(p);
 		}
 
-		// Draw buttons on top of canvas
-		for(auto& b : buttons)
+		for(auto& b : buttons)				// Draw buttons on top of canvas
 			window.draw(b.buttonShape);
 
 		window.display();

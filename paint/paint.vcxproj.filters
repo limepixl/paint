@@ -20,7 +20,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="utility.h">
+    <ClInclude Include="stroke.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="button.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
