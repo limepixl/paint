@@ -1,47 +1,5 @@
 #include <SFML/Graphics.hpp>
-
-inline float Dist(const sf::Vector2f& first, const sf::Vector2f& second)
-{
-	float distX = first.x - second.x;
-	float distY = first.y - second.y;
-	return sqrtf(distX * distX + distY * distY);
-}
-
-struct LineWithThickness : public sf::Drawable
-{
-	LineWithThickness(const sf::Vector2f& p1, const sf::Vector2f& p2, sf::Color color, float thickness)
-	{
-		sf::Vector2f dir = p2 - p1;
-		sf::Vector2f unitDir = dir / sqrtf(dir.x * dir.x + dir.y * dir.y);
-		sf::Vector2f rightAngleUnitDir(-unitDir.y, unitDir.x);
-		sf::Vector2f brushOffset = (thickness * 0.5f) * rightAngleUnitDir;
-
-		vertices[0].position = p1 + brushOffset;
-		vertices[1].position = p2 + brushOffset;
-		vertices[2].position = p2 - brushOffset;
-		vertices[3].position = p1 - brushOffset;
-
-		for(auto& v : vertices)
-			v.color = color;
-	}
-
-	void draw(sf::RenderTarget& target, sf::RenderStates states) const
-	{
-		target.draw(vertices, 4, sf::Quads);
-	}
-
-public:
-	sf::Vertex vertices[4];
-	float thickness;
-};
-
-struct Stroke
-{
-	bool currentlyBeingDrawn;
-	sf::VertexArray line;
-	std::vector<LineWithThickness> parts;
-	std::vector<sf::CircleShape> joints;
-};
+#include "utility.h"
 
 int main()
 {
@@ -51,10 +9,10 @@ int main()
 	window.setFramerateLimit(60);
 
 	int brushSize = 10;
-	std::vector<Stroke> brushStrokes;
 	sf::Color brushColor(0, 0, 0);
 
 	Stroke currentStroke;
+	std::vector<Stroke> brushStrokes;
 
 	while(window.isOpen())
 	{
@@ -88,8 +46,9 @@ int main()
 				tempJoint.setPosition(second.position);
 				tempJoint.setFillColor(brushColor);
 				currentStroke.joints.push_back(tempJoint);
-
-			} else if(e.type == sf::Event::MouseButtonReleased && e.key.code == sf::Mouse::Left)
+			} 
+			
+			if((e.type == sf::Event::MouseButtonReleased && e.key.code == sf::Mouse::Left) || e.type == sf::Event::LostFocus)
 			{
 				currentStroke.currentlyBeingDrawn = false;
 				brushStrokes.push_back(currentStroke);
@@ -100,10 +59,26 @@ int main()
 
 			if(e.type == sf::Event::KeyPressed)
 			{
-				if(e.key.code == sf::Keyboard::Num1)
-					brushColor = sf::Color::Black;
-				else if(e.key.code == sf::Keyboard::Num2)
-					brushColor = sf::Color::Red;
+				// Increase / decrease brush size
+				if(e.key.code == sf::Keyboard::Add)
+					brushSize += 5;
+				else if(e.key.code == sf::Keyboard::Subtract)
+					brushSize -= 5;
+
+				if(!currentStroke.currentlyBeingDrawn)
+				{
+					// Undo
+					if(e.key.control && e.key.code == sf::Keyboard::Z && !brushStrokes.empty())
+						brushStrokes.erase(brushStrokes.end() - 1);
+
+					// Change brush color
+					if(e.key.code == sf::Keyboard::Num1)
+						brushColor = sf::Color::Black;
+					else if(e.key.code == sf::Keyboard::Num2)
+						brushColor = sf::Color::Red;
+					else if(e.key.code == sf::Keyboard::Num3)
+						brushColor = sf::Color::Blue;
+				}
 			}
 		}
 
