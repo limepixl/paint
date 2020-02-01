@@ -81,3 +81,11 @@ void InitializeButtons(std::vector<Button>& buttons, int width)
 		buttons.push_back({ temp });
 	}
 }
+
+bool IsPointWithinBox(sf::RectangleShape& box, sf::Vector2f& pos)
+{
+	sf::Vector2f boxStart = box.getPosition();
+	sf::Vector2f boxDimensions = box.getSize();
+
+	return (pos.x >= boxStart.x && pos.x <= boxStart.x + boxDimensions.x) && (pos.y <= boxStart.y + boxDimensions.y && pos.y >= boxStart.y);
+}

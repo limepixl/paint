@@ -7,7 +7,7 @@ int main()
 	const int WIDTH = 1280;
 	const int HEIGHT = 720;
 	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Paint");
-	window.setFramerateLimit(30);
+	window.setFramerateLimit(60);
 
 	int brushSize = 10;
 	sf::Color brushColor(0, 0, 0);
@@ -29,32 +29,48 @@ int main()
 		{
 			if(e.type == sf::Event::Closed)
 				window.close();
+
+			// Starting a new brush stroke
 			if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
-				currentStroke.currentlyBeingDrawn = true;
-
 				// Get center of brush
 				sf::Vector2f mousePos = (sf::Vector2f)sf::Mouse::getPosition(window);
-				currentStroke.line.append(sf::Vertex(mousePos, brushColor));
 
-				int vertexCount = (int)currentStroke.line.getVertexCount();
-				if(vertexCount < 2)
-					continue;
-				sf::Vertex& first = currentStroke.line[vertexCount - 2];
-				sf::Vertex& second = currentStroke.line[vertexCount - 1];
+				// If picking a color
+				bool colorPicked = false;
+				for(auto& b : buttons)
+					if(IsPointWithinBox(b.buttonShape, mousePos) && !currentStroke.currentlyBeingDrawn)
+					{
+						colorPicked = true;
+						brushColor = b.buttonShape.getFillColor();
+						break;
+					}
 
-				LineWithThickness tempPart(first.position, second.position, brushColor, (float)brushSize);
-				currentStroke.parts.push_back(tempPart);
+				if(!colorPicked)
+				{
+					currentStroke.line.append(sf::Vertex(mousePos, brushColor));
+					currentStroke.currentlyBeingDrawn = true;
 
-				float r = (float)brushSize * 0.5f;
-				sf::CircleShape tempJoint(r);
-				tempJoint.setOrigin(r, r);
-				tempJoint.setPosition(second.position);
-				tempJoint.setFillColor(brushColor);
-				currentStroke.joints.push_back(tempJoint);
-			} 
+					int vertexCount = (int)currentStroke.line.getVertexCount();
+					if(vertexCount < 2)
+						continue;
+					sf::Vertex& first = currentStroke.line[vertexCount - 2];
+					sf::Vertex& second = currentStroke.line[vertexCount - 1];
+
+					LineWithThickness tempPart(first.position, second.position, brushColor, (float)brushSize);
+					currentStroke.parts.push_back(tempPart);
+
+					float r = (float)brushSize * 0.5f;
+					sf::CircleShape tempJoint(r);
+					tempJoint.setOrigin(r, r);
+					tempJoint.setPosition(second.position);
+					tempJoint.setFillColor(brushColor);
+					currentStroke.joints.push_back(tempJoint);
+				}
+			}
 			
-			if((e.type == sf::Event::MouseButtonReleased && e.key.code == sf::Mouse::Left) || e.type == sf::Event::LostFocus)
+			// Current brush stroke has ended, store it
+			if((e.type == sf::Event::MouseButtonReleased && e.key.code == sf::Mouse::Left && currentStroke.currentlyBeingDrawn) || e.type == sf::Event::LostFocus)
 			{
 				currentStroke.currentlyBeingDrawn = false;
 				brushStrokes.push_back(currentStroke);
