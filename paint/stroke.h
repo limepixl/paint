@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <cmath>
 
 // Source: https://github.com/SFML/SFML/wiki/Source:-Line-segment-with-thickness
 struct LineWithThickness : public sf::Drawable

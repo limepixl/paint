@@ -6,7 +6,7 @@ int main()
 	// Window setup
 	const int WIDTH = 1280;
 	const int HEIGHT = 720;
-	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Paint");
+	sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Canvas", sf::Style::Close);
 	window.setFramerateLimit(60);
 	sf::Vector2i windowPos = window.getPosition();
 
@@ -29,7 +29,7 @@ int main()
 	int paletteSize = (int)buttons[0].buttonShape.getSize().x;
 	sf::RenderWindow window2(sf::VideoMode(paletteSize, HEIGHT), "Palette", sf::Style::None);
 	window2.setFramerateLimit(60);
-	window2.setPosition(windowPos - sf::Vector2i(paletteSize, 0));
+	window2.setPosition(windowPos + sf::Vector2i(-paletteSize, 30));
 
 	while(window.isOpen())
 	{
@@ -100,11 +100,10 @@ int main()
 			}
 		}
 
-		// If canvas window moved, move the palette as well
-		if(window.getPosition() != windowPos)
+		if(windowPos != window.getPosition())
 		{
 			windowPos = window.getPosition();
-			window2.setPosition(windowPos - sf::Vector2i(paletteSize, 0));
+			window2.setPosition(windowPos + sf::Vector2i(-paletteSize, 30));
 		}
 
 		while(window2.pollEvent(e))
@@ -112,7 +111,7 @@ int main()
 			// Palette button click events
 			if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
-				sf::Vector2f mousePos2 = (sf::Vector2f)sf::Mouse::getPosition(window2);
+				sf::Vector2f mousePos2((float)e.mouseMove.x, (float)e.mouseMove.y);
 
 				for(auto& b : buttons)
 				if(IsPointWithinBox(b.buttonShape, mousePos2) && !currentStroke.currentlyBeingDrawn)
