@@ -3,3 +3,6 @@ x64
 x86
 paint/x64
 paint/paint.vcxproj.user
+build
+.vscode
+

@@ -67,9 +67,8 @@ int main()
 				tempJoint.setFillColor(brushColor);
 				currentStroke.joints.push_back(tempJoint);
 			}
-			
 			// Current brush stroke has ended or the window has lost focus, store the stroke
-			if((e.type == sf::Event::MouseButtonReleased && e.key.code == sf::Mouse::Left && currentStroke.currentlyBeingDrawn))
+			else if(!sf::Mouse::isButtonPressed(sf::Mouse::Left) && currentStroke.currentlyBeingDrawn)
 			{
 				currentStroke.currentlyBeingDrawn = false;
 				if(window.hasFocus())
