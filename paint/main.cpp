@@ -19,10 +19,20 @@ int main()
 	std::vector<Button> buttons;
 	InitializeButtons(buttons, WIDTH, HEIGHT);
 
-	// Render loop
+	// Mouse brush outline
+	sf::CircleShape brushOutline(brushSize * 0.5f);
+	brushOutline.setFillColor(sf::Color::Transparent);
+	brushOutline.setOutlineThickness(1.0f);
+	brushOutline.setOutlineColor(sf::Color::Black);
+	brushOutline.setOrigin(brushSize * 0.5f, brushSize * 0.5f);
+
 	while(window.isOpen())
 	{
 		window.clear(sf::Color::White);
+
+		// Cursor position relative to screen
+		sf::Vector2f mousePos = (sf::Vector2f)sf::Mouse::getPosition(window);
+		brushOutline.setPosition(mousePos);
 
 		sf::Event e;
 		while(window.pollEvent(e))
@@ -33,9 +43,6 @@ int main()
 			// Starting a new brush stroke
 			if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
-				// Get center of brush
-				sf::Vector2f mousePos = (sf::Vector2f)sf::Mouse::getPosition(window);
-
 				// If picking a color
 				bool colorPicked = false;
 				for(auto& b : buttons)
@@ -87,6 +94,10 @@ int main()
 				else if(e.key.code == sf::Keyboard::Subtract)
 					brushSize -= 5;
 
+				float r = brushSize * 0.5f;
+				brushOutline.setRadius(r);
+				brushOutline.setOrigin(r, r);
+
 				if(!currentStroke.currentlyBeingDrawn)
 				{
 					// Undo
@@ -115,6 +126,7 @@ int main()
 		for(auto& b : buttons)				// Draw buttons on top of canvas
 			window.draw(b.buttonShape);
 
+		window.draw(brushOutline);
 		window.display();
 	}
 }
