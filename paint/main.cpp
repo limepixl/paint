@@ -25,11 +25,11 @@ int main()
 	brushOutline.setFillColor(brushColor);
 	brushOutline.setOrigin(brushSize * 0.5f, brushSize * 0.5f);
 
-	// Create a pallete window
-	int palleteSize = (int)buttons[0].buttonShape.getSize().x;
-	sf::RenderWindow window2(sf::VideoMode(palleteSize, HEIGHT), "Pallete", sf::Style::None);
+	// Create a palette window
+	int paletteSize = (int)buttons[0].buttonShape.getSize().x;
+	sf::RenderWindow window2(sf::VideoMode(paletteSize, HEIGHT), "Palette", sf::Style::None);
 	window2.setFramerateLimit(60);
-	window2.setPosition(windowPos - sf::Vector2i(palleteSize, 0));
+	window2.setPosition(windowPos - sf::Vector2i(paletteSize, 0));
 
 	while(window.isOpen())
 	{
@@ -100,27 +100,31 @@ int main()
 			}
 		}
 
+		// If canvas window moved, move the palette as well
 		if(window.getPosition() != windowPos)
 		{
 			windowPos = window.getPosition();
-			window2.setPosition(windowPos - sf::Vector2i(palleteSize, 0));
+			window2.setPosition(windowPos - sf::Vector2i(paletteSize, 0));
 		}
 
 		while(window2.pollEvent(e))
 		{
+			// Palette button click events
 			if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
 				sf::Vector2f mousePos2 = (sf::Vector2f)sf::Mouse::getPosition(window2);
 
 				for(auto& b : buttons)
-					if(IsPointWithinBox(b.buttonShape, mousePos2) && !currentStroke.currentlyBeingDrawn)
-					{
-						brushColor = b.buttonShape.getFillColor();
-						brushOutline.setFillColor(brushColor);
-						break;
-					}
+				if(IsPointWithinBox(b.buttonShape, mousePos2) && !currentStroke.currentlyBeingDrawn)
+				{
+					brushColor = b.buttonShape.getFillColor();
+					brushOutline.setFillColor(brushColor);
+					break;
+				}
 			}
 
+			// Duplicate code because undo and resizing the brush needs to work
+			// regardless of which window has focus
 			if(e.type == sf::Event::KeyPressed)
 			{
 				// Increase / decrease brush size
@@ -142,7 +146,7 @@ int main()
 			}
 		}
 
-		for(auto& s : brushStrokes)	// Draw all stored brush strokes
+		for(auto& s : brushStrokes)		// Draw all stored brush strokes
 		{
 			for(auto& j : s.joints)
 				window.draw(j);
@@ -162,7 +166,7 @@ int main()
 		window.display();
 
 		window2.clear(sf::Color::White);
-		for(auto& b : buttons)				// Draw buttons on top of canvas
+		for(auto& b : buttons)				// Draw buttons in palette window
 			window2.draw(b.buttonShape);
 		window2.display();
 	}
