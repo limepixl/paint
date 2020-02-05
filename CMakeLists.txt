@@ -4,9 +4,14 @@ project(paint)
 
 file(GLOB SRC "paint/*.cpp")
 
-if(WIN32)
+if(MSVC)
     set(SFML_STATIC_LIBRARIES TRUE)
-endif(WIN32)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi /W4")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /W4")
+else()
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g3 -Wall")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -Wall")
+endif()
 
 file(GLOB SRC "src/*.cpp")
 
